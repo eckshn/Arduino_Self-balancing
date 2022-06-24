@@ -3,14 +3,23 @@
 #include <Adafruit_Sensor.h> // part of above library
 #include <Wire.h>
 
-// MPU parameters
+/* MPU parameters */
 Adafruit_MPU6050 mpu;
 sensors_event_t accelerometer, gyro, temp;
 
 uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
 
-// PID parameters
+/* L298N Module */
+// Right Motor
+#define in1 6
+#define in2 7
+
+// Left Motor
+#define in3 8
+#define in4 9
+
+/* PID parameters */
 double Kp = 0.0;
 double Ki = 0.0;
 double Kd = 0.0;
@@ -56,3 +65,20 @@ void loop() {
 
   analogWrite(0, output); // needs to be updated accordingly
  }
+
+void setMotor(int motorSpeed) {
+  if(output < 0) { // may need to flip
+    analogWrite(in1, motorSpeed);
+    analogWrite(in2, 0);
+  
+    analogWrite(in3, motorSpeed);
+    analogWrite(in4, 0);
+  }
+  else {
+    analogWrite(in1, 0);
+    analogWrite(in2, motorSpeed);
+  
+    analogWrite(in3, 0);
+    analogWrite(in4, motorSpeed);
+  }
+}
