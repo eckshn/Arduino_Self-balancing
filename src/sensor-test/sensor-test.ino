@@ -2,13 +2,34 @@
 #include <Adafruit_Sensor.h> // part of above library
 #include <Wire.h>
 
+
+/* MPU */
 Adafruit_MPU6050 mpu;
+
+/* L298N Module */
+// Right Motor
+#define in1 6
+#define in2 7
+
+// Left Motor
+#define in3 8
+#define in4 9
+
+// Motor Constants
+int motorSpeed = 200;
+int timeDelay = 500;
 
 void setup(void) {
   Serial.begin(115200);
   while (!Serial)
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
 
+  // Set up ports
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  
   Serial.println("Adafruit MPU6050 test!");
 
   // Try to initialize!
@@ -82,7 +103,7 @@ void setup(void) {
   Serial.println("");
   delay(100);
 
-  time = millis();
+  // time = millis();
   pinMode(12, OUTPUT);
   pinMode(13, OUTPUT);
 }
@@ -91,8 +112,21 @@ void loop() {
 }
 
 void motor_test() {
-  // run motors
-  // need pins
+  // run motors clockwise
+  analogWrite(in1, motorSpeed);
+  analogWrite(in2, 0);
+  
+  analogWrite(in3, motorSpeed);
+  analogWrite(in4, 0);
+
+  delay(timeDelay);
+
+  //run motors counterclockwise
+  analogWrite(in1, 0);
+  analogWrite(in2, motorSpeed);
+  
+  analogWrite(in3, 0);
+  analogWrite(in4, motorSpeed);
 }
 
 void bluetooth_test() {
