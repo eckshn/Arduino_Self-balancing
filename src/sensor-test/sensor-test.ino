@@ -29,7 +29,12 @@ void setup(void) {
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
-  
+}
+
+void loop() {
+}
+
+void MPU_setup() {
   Serial.println("Adafruit MPU6050 test!");
 
   // Try to initialize!
@@ -102,13 +107,37 @@ void setup(void) {
 
   Serial.println("");
   delay(100);
-
-  // time = millis();
-  pinMode(12, OUTPUT);
-  pinMode(13, OUTPUT);
 }
 
-void loop() {
+// copied from example
+void MPU_test() {
+  /* Get new sensor events with the readings */
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  /* Print out the values */
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(500);  
 }
 
 void motor_test() {
@@ -130,5 +159,5 @@ void motor_test() {
 }
 
 void bluetooth_test() {
-  // run bluetooth mudle on bot? 
+  // run bluetooth module on bot? 
 }

@@ -54,7 +54,7 @@ void loop() {
   double x_accel = accelerometer.acceleration.x - 0.81;
 
   double angle_accel = atan(z_accel / y_accel);
-  double angle_gyro = gyro.gyro.roll; // use roll as bot rotates forward
+  double angle_gyro = gyro.gyro.pitch; // use roll as bot rotates forward
 
   // angle = (1 - alpha) * (angle + angle_gyro) + alpha*angle_accel; // end of copy paste
   
@@ -63,7 +63,7 @@ void loop() {
   
   pid.Compute();
 
-  analogWrite(0, output); // needs to be updated accordingly
+  setMotor(output);
  }
 
 void setMotor(int motorSpeed) {
