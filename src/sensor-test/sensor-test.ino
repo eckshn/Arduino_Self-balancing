@@ -34,7 +34,7 @@ void setup(void) {
 void loop() {
 }
 
-void MPU_setup() {
+void IMU_setup() {
   Serial.println("Adafruit MPU6050 test!");
 
   // Try to initialize!
@@ -110,7 +110,7 @@ void MPU_setup() {
 }
 
 // copied from example
-void MPU_test() {
+void IMU_test() {
   /* Get new sensor events with the readings */
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
@@ -132,6 +132,7 @@ void MPU_test() {
   Serial.print(g.gyro.z);
   Serial.println(" rad/s");
 
+  /*
   Serial.print("Angle Roll: ");
   Serial.print(g.gyro.roll);
   Serial.print(", Pitch: ");
@@ -139,6 +140,7 @@ void MPU_test() {
   // Serial.print(", Azimuth: ");
   // Serial.print(g.gyro.azimuth); gives error?
   Serial.println(" rad");
+  */
 
   Serial.print("Temperature: ");
   Serial.print(temp.temperature);
