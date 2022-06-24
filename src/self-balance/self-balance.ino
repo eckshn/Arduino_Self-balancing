@@ -3,12 +3,15 @@
 #include <Adafruit_Sensor.h> // part of above library
 #include <Wire.h>
 
-/* MPU parameters */
+/* IMU parameters */
 Adafruit_MPU6050 mpu;
 sensors_event_t accelerometer, gyro, temp;
 
 uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
+
+float dt;
+unsigned long previousTime;
 
 /* L298N Module */
 // Right Motor
@@ -43,6 +46,8 @@ void setup(void) {
    pid.SetSampleTime(10);
    pid.SetOutputLimits(-255, 255);
    pid.SetTunings(Kp, Ki, Kd);
+
+   previousTime = millis();
 }
 
 void loop() {
@@ -54,16 +59,20 @@ void loop() {
   double x_accel = accelerometer.acceleration.x - 0.81;
 
   double angle_accel = atan(z_accel / y_accel);
-  double angle_gyro = gyro.gyro.pitch; // use roll as bot rotates forward
-
-  // angle = (1 - alpha) * (angle + angle_gyro) + alpha*angle_accel; // end of copy paste
-  
-  // PID
-  // input = mpu's input
+  // double angle_gyro = gyro.gyro.pitch; // use pitch as bot rotates forward
+  // curAngle = (1 - alpha) * (curAngle + angle_gyro) + alpha*angle_accel; // end of copy paste
+  dt = (millis() - previousTime) / 1000.;
+  previousTime = millis();
+  input = input + gyro.gyro.x * dt;
   
   pid.Compute();
 
   setMotor(output);
+
+  // Plot
+  Serial.print(setpoint);
+  Serial.print("\t");
+  Serial.println(input);
  }
 
 void setMotor(int motorSpeed) {

@@ -132,6 +132,14 @@ void MPU_test() {
   Serial.print(g.gyro.z);
   Serial.println(" rad/s");
 
+  Serial.print("Angle Roll: ");
+  Serial.print(g.gyro.roll);
+  Serial.print(", Pitch: ");
+  Serial.print(g.gyro.pitch);
+  // Serial.print(", Azimuth: ");
+  // Serial.print(g.gyro.azimuth); gives error?
+  Serial.println(" rad");
+
   Serial.print("Temperature: ");
   Serial.print(temp.temperature);
   Serial.println(" degC");
