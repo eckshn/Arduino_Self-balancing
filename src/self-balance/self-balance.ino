@@ -17,10 +17,12 @@ unsigned long previousTime;
 // Right Motor
 #define in1 6
 #define in2 7
+#define enA 5
 
 // Left Motor
 #define in3 8
 #define in4 9
+#define enB 10
 
 /* PID parameters */
 double Kp = 0.0;
@@ -28,7 +30,7 @@ double Ki = 0.0;
 double Kd = 0.0;
 
 double setpoint = 0.0;
-double input; // MPU6050
+double input; // IMU
 double output; // Motor
 
 PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
@@ -38,7 +40,7 @@ void setup(void) {
   while (!Serial)
     delay(10);
   
-   // Setup MPU
+   // Setup IMU
    mpu.begin();
    
    // Setup PID
@@ -76,18 +78,21 @@ void loop() {
  }
 
 void setMotor(int motorSpeed) {
-  if(output < 0) { // may need to flip
-    analogWrite(in1, motorSpeed);
-    analogWrite(in2, 0);
+  analogWrite(enA, abs(motorSpeed));
+  analogWrite(enB, abs(motorSpeed));
   
-    analogWrite(in3, motorSpeed);
-    analogWrite(in4, 0);
+  if(motorSpeed < 0) { // may need to flip
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+  
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
   }
   else {
-    analogWrite(in1, 0);
-    analogWrite(in2, motorSpeed);
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
   
-    analogWrite(in3, 0);
-    analogWrite(in4, motorSpeed);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
   }
 }
