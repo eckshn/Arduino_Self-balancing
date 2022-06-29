@@ -10,13 +10,15 @@ Adafruit_MPU6050 mpu;
 // Right Motor
 #define in1 6
 #define in2 7
+#define enA 5
 
 // Left Motor
 #define in3 8
 #define in4 9
+#define enB 10
 
 // Motor Constants
-int motorSpeed = 200;
+int motorSpeed = 50;
 int timeDelay = 500;
 
 void setup(void) {
@@ -29,9 +31,14 @@ void setup(void) {
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+
+  IMU_setup();
 }
 
 void loop() {
+  IMU_test();
 }
 
 void IMU_setup() {
@@ -151,21 +158,23 @@ void IMU_test() {
 }
 
 void motor_test() {
+  analogWrite(enA, motorSpeed);
+  analogWrite(enB, motorSpeed); /*
   // run motors clockwise
-  analogWrite(in1, motorSpeed);
-  analogWrite(in2, 0);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
   
-  analogWrite(in3, motorSpeed);
-  analogWrite(in4, 0);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
 
-  delay(timeDelay);
+   /* delay(timeDelay); */
 
   //run motors counterclockwise
-  analogWrite(in1, 0);
-  analogWrite(in2, motorSpeed);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
   
-  analogWrite(in3, 0);
-  analogWrite(in4, motorSpeed);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
 }
 
 void bluetooth_test() {
