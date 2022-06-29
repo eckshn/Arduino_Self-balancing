@@ -56,11 +56,11 @@ void loop() {
   mpu.getEvent(&accelerometer, &gyro, &temp); 
 
   //copied from old code need to understand what constants mean
-  double z_accel = accelerometer.acceleration.z + 2.08;
-  double y_accel = accelerometer.acceleration.y + 0.37;
-  double x_accel = accelerometer.acceleration.x - 0.81;
+  // double z_accel = accelerometer.acceleration.z + 2.08;
+  // double y_accel = accelerometer.acceleration.y + 0.37;
+  // double x_accel = accelerometer.acceleration.x - 0.81;
 
-  double angle_accel = atan(z_accel / y_accel);
+  // double angle_accel = atan(z_accel / y_accel);
   // double angle_gyro = gyro.gyro.pitch; // use pitch as bot rotates forward
   // curAngle = (1 - alpha) * (curAngle + angle_gyro) + alpha*angle_accel; // end of copy paste
   dt = (millis() - previousTime) / 1000.;
