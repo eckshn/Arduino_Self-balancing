@@ -1,6 +1,8 @@
 #include <Adafruit_MPU6050.h> // https://www.arduino.cc/reference/en/libraries/adafruit-mpu6050/
 #include <Adafruit_Sensor.h> // part of above library
 #include <SoftwareSerial.h> // part of Arduino
+#include <SPI.h>
+#include <SD.h>
 #include <Wire.h>
 
 
@@ -26,7 +28,10 @@ int timeDelay = 500;
 /* HC-05 */
 #define blueRX 11
 #define blueTX 12
-SoftwareSerial EEBlue(blueRX, blueTX);
+SoftwareSerial bluetooth(blueRX, blueTX);
+
+/* SD Card */
+File file;
 
 void setup(void) {
   Serial.begin(115200);
@@ -51,7 +56,7 @@ void loop() {
 }
 
 void bluetooth_setup() {
-  EEBlue.begin(9600);  
+  bluetooth.begin(9600);  
 }
 
 void IMU_setup() {
@@ -191,13 +196,40 @@ void motor_test() {
 }
 
 void bluetooth_test() {
-  if(Serial.available() > 0) {
-    char data = Serial.read();
+  if(bluetooth.available()) {
+    char data = bluetooth.read();
     switch(data)
     {
         case 'w' : digitalWrite(LED_BUILTIN, HIGH);
         case 's' : digitalWrite(LED_BUILTIN, LOW);
         default : break;
     } 
+  }
+}
+
+void sdcard_test() {
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(10)) {
+    Serial.println("initialization failed!");
+  while (1);
+  }
+  Serial.println("initialization done.");
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  file = SD.open("test.txt", FILE_WRITE);
+  // if the file opened okay, write to it:
+  if (file) {
+    Serial.print("Writing to test.txt...");
+    file.println("This is a test file :)");
+    file.println("testing 1, 2, 3.");
+    for (int i = 0; i < 20; i++) {
+      file.println(i);
+    }
+    // close the file:
+    file.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
   }
 }
