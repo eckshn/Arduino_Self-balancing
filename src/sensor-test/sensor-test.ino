@@ -1,10 +1,12 @@
 #include <Adafruit_MPU6050.h> // https://www.arduino.cc/reference/en/libraries/adafruit-mpu6050/
 #include <Adafruit_Sensor.h> // part of above library
+#include <SoftwareSerial.h> // part of Arduino
 #include <Wire.h>
 
 
 /* MPU */
 Adafruit_MPU6050 mpu;
+double offsetAmount = 0.04; // at stationary reads -0.04
 
 /* L298N Module */
 // Right Motor
@@ -18,8 +20,13 @@ Adafruit_MPU6050 mpu;
 #define enB 10
 
 // Motor Constants
-int motorSpeed = 50;
+int motorSpeed = 200;
 int timeDelay = 500;
+
+/* HC-05 */
+#define blueRX 11
+#define blueTX 12
+SoftwareSerial EEBlue(blueRX, blueTX);
 
 void setup(void) {
   Serial.begin(115200);
@@ -34,11 +41,17 @@ void setup(void) {
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
 
-  IMU_setup();
+  // IMU_setup();
+  bluetooth_setup();
 }
 
 void loop() {
-  IMU_test();
+  // motor_test();
+  bluetooth_test();
+}
+
+void bluetooth_setup() {
+  EEBlue.begin(9600);  
 }
 
 void IMU_setup() {
@@ -132,7 +145,7 @@ void IMU_test() {
   Serial.println(" m/s^2");
 
   Serial.print("Rotation X: ");
-  Serial.print(g.gyro.x);
+  Serial.print(g.gyro.x + offsetAmount);
   Serial.print(", Y: ");
   Serial.print(g.gyro.y);
   Serial.print(", Z: ");
@@ -159,7 +172,7 @@ void IMU_test() {
 
 void motor_test() {
   analogWrite(enA, motorSpeed);
-  analogWrite(enB, motorSpeed); /*
+  analogWrite(enB, motorSpeed); 
   // run motors clockwise
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -170,13 +183,21 @@ void motor_test() {
    /* delay(timeDelay); */
 
   //run motors counterclockwise
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+  // digitalWrite(in1, LOW);
+  // digitalWrite(in2, HIGH);
   
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
+  // digitalWrite(in3, LOW);
+  // digitalWrite(in4, HIGH);
 }
 
 void bluetooth_test() {
-  // run bluetooth module on bot? 
+  if(Serial.available() > 0) {
+    char data = Serial.read();
+    switch(data)
+    {
+        case 'w' : digitalWrite(LED_BUILTIN, HIGH);
+        case 's' : digitalWrite(LED_BUILTIN, LOW);
+        default : break;
+    } 
+  }
 }

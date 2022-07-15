@@ -6,6 +6,7 @@
 /* IMU parameters */
 Adafruit_MPU6050 mpu;
 sensors_event_t accelerometer, gyro, temp;
+double gyroOffset = 0.04;
 
 uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
@@ -25,7 +26,7 @@ unsigned long previousTime;
 #define enB 10
 
 /* PID parameters */
-double Kp = 0.0;
+double Kp = 300.0;
 double Ki = 0.0;
 double Kd = 0.0;
 
@@ -65,7 +66,7 @@ void loop() {
   // curAngle = (1 - alpha) * (curAngle + angle_gyro) + alpha*angle_accel; // end of copy paste
   dt = (millis() - previousTime) / 1000.;
   previousTime = millis();
-  input = input + gyro.gyro.x * dt;
+  input = input + (gyro.gyro.x + gyroOffset) * dt;
   
   pid.Compute();
 
@@ -74,7 +75,9 @@ void loop() {
   // Plot
   Serial.print(setpoint);
   Serial.print("\t");
-  Serial.println(input);
+  Serial.print(input);
+  Serial.print("\t");
+  Serial.println(output);
  }
 
 void setMotor(int motorSpeed) {
@@ -82,17 +85,17 @@ void setMotor(int motorSpeed) {
   analogWrite(enB, abs(motorSpeed));
   
   if(motorSpeed < 0) { // may need to flip
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
-  
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
-  }
-  else {
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
   
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
+  }
+  else {
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+  
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
   }
 }
