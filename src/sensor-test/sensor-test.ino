@@ -45,14 +45,18 @@ void setup(void) {
   pinMode(in4, OUTPUT);
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   // IMU_setup();
   bluetooth_setup();
+  // sdcard_test();
 }
 
 void loop() {
   // motor_test();
+  Serial.println("Before test");
   bluetooth_test();
+  Serial.println("After test");
 }
 
 void bluetooth_setup() {
@@ -197,29 +201,26 @@ void motor_test() {
 
 void bluetooth_test() {
   if(bluetooth.available()) {
-    char data = bluetooth.read();
+    int data = bluetooth.read();
     switch(data)
     {
-        case 'w' : digitalWrite(LED_BUILTIN, HIGH);
-        case 's' : digitalWrite(LED_BUILTIN, LOW);
-        default : break;
+        case 1 : Serial.println("hi");
+        case 2 : digitalWrite(LED_BUILTIN, LOW);
+        default : Serial.println("you didn't press 1 or 2");
     } 
   }
 }
 
 void sdcard_test() {
-  Serial.print("Initializing SD card...");
-  if (!SD.begin(10)) {
-    Serial.println("initialization failed!");
-  while (1);
-  }
-  Serial.println("initialization done.");
+  Serial.println("Initializing SD card...");
+  SD.begin(4);
+  Serial.println("Initialization done!");
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
   file = SD.open("test.txt", FILE_WRITE);
   // if the file opened okay, write to it:
   if (file) {
-    Serial.print("Writing to test.txt...");
+    Serial.println("Writing to test.txt...");
     file.println("This is a test file :)");
     file.println("testing 1, 2, 3.");
     for (int i = 0; i < 20; i++) {
