@@ -1,6 +1,5 @@
 #include <Adafruit_MPU6050.h> // https://www.arduino.cc/reference/en/libraries/adafruit-mpu6050/
 #include <Adafruit_Sensor.h> // part of above library
-#include <SoftwareSerial.h> // part of Arduino
 #include <SPI.h>
 #include <SD.h>
 #include <Wire.h>
@@ -26,15 +25,14 @@ int motorSpeed = 200;
 int timeDelay = 500;
 
 /* HC-05 */
-#define blueRX 11
-#define blueTX 12
-SoftwareSerial bluetooth(blueRX, blueTX);
+int state = 0;
+int flag = 0;
 
 /* SD Card */
 File file;
 
 void setup(void) {
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial)
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
 
@@ -45,22 +43,15 @@ void setup(void) {
   pinMode(in4, OUTPUT);
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(13, OUTPUT);
 
   // IMU_setup();
-  bluetooth_setup();
   // sdcard_test();
 }
 
 void loop() {
   // motor_test();
-  Serial.println("Before test");
-  bluetooth_test();
-  Serial.println("After test");
-}
-
-void bluetooth_setup() {
-  bluetooth.begin(9600);  
+  // bluetooth_test();
 }
 
 void IMU_setup() {
@@ -200,15 +191,25 @@ void motor_test() {
 }
 
 void bluetooth_test() {
-  if(bluetooth.available()) {
-    int data = bluetooth.read();
-    switch(data)
-    {
-        case 1 : Serial.println("hi");
-        case 2 : digitalWrite(LED_BUILTIN, LOW);
-        default : Serial.println("you didn't press 1 or 2");
-    } 
-  }
+   if(Serial.available()>0) {
+      state = Serial.read();
+      flag = 0;
+   }
+
+   if (state == '0') {
+      digitalWrite(13, LOW);
+      if(flag==0) {
+          Serial.println("LED: off");
+          flag = 1;
+      }
+   }
+   else if (state == '1') {
+    digitalWrite(13, HIGH);
+    if(flag==0) {
+      Serial.println("LED: on");
+      flag = 1;
+      }
+   }
 }
 
 void sdcard_test() {
