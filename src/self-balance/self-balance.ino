@@ -1,6 +1,8 @@
 #include <PID_v1.h> // https://www.arduino.cc/reference/en/libraries/pid/
 #include <Adafruit_MPU6050.h> // https://www.arduino.cc/reference/en/libraries/adafruit-mpu6050/
 #include <Adafruit_Sensor.h> // part of above library
+#include <SPI.h>
+#include <SD.h>
 #include <Wire.h>
 
 /* IMU parameters */
@@ -23,7 +25,7 @@ unsigned long previousTime;
 // Left Motor
 #define in3 8
 #define in4 9
-#define enB 10
+#define enB 3
 
 /* PID parameters */
 double Kp = 300.0;
@@ -36,6 +38,10 @@ double output; // Motor
 
 PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
+/* SD Card */
+File file;
+#define sdPort 10;
+
 void setup(void) {
   Serial.begin(115200);
   while (!Serial)
@@ -43,6 +49,11 @@ void setup(void) {
   
    // Setup IMU
    mpu.begin();
+
+   // Setup SD card
+   SD.begin(sdPort);
+   file = SD.open("logs.txt", FILE_WRITE);
+   // check if have to close
    
    // Setup PID
    pid.SetMode(AUTOMATIC);
@@ -72,12 +83,19 @@ void loop() {
 
   setMotor(output);
 
-  // Plot
-  Serial.print(setpoint);
+  // Log
+  Serial.print("Setpoint: " + setpoint + ",");
+  file.print(setpoint);
   Serial.print("\t");
-  Serial.print(input);
+  file.print("\t");
+  
+  Serial.print("Input: " + input + ",");
   Serial.print("\t");
-  Serial.println(output);
+  file.print(input);
+  file.print("\t");
+  
+  Serial.println("Output: " + output + ",");
+  file.println(output);
  }
 
 void setMotor(int motorSpeed) {
