@@ -84,6 +84,8 @@ void loop() {
   setMotor(output);
 
   // Log
+  file.print(dt + "\t");
+  
   Serial.print("Setpoint: " + setpoint + ",");
   file.print(setpoint);
   Serial.print("\t");
