@@ -46,12 +46,13 @@ void setup(void) {
   pinMode(13, OUTPUT);
 
   // IMU_setup();
-  // sdcard_test();
+  sdcard_test();
 }
 
 void loop() {
   // motor_test();
-  // bluetooth_test();
+  bluetooth_test();
+  // IMU_test();
 }
 
 void IMU_setup() {
@@ -197,14 +198,14 @@ void bluetooth_test() {
    }
 
    if (state == '0') {
-      digitalWrite(13, LOW);
+      // digitalWrite(13, LOW);
       if(flag==0) {
           Serial.println("LED: off");
           flag = 1;
       }
    }
    else if (state == '1') {
-    digitalWrite(13, HIGH);
+    // digitalWrite(13, HIGH);
     if(flag==0) {
       Serial.println("LED: on");
       flag = 1;
@@ -214,7 +215,7 @@ void bluetooth_test() {
 
 void sdcard_test() {
   Serial.println("Initializing SD card...");
-  SD.begin(4);
+  SD.begin(10);
   Serial.println("Initialization done!");
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.

@@ -17,6 +17,7 @@ float dt;
 unsigned long previousTime;
 
 /* L298N Module */
+int staticFriction = 70; // TODO: Needs to be tested
 // Right Motor
 #define in1 6
 #define in2 7
@@ -40,10 +41,10 @@ PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 /* SD Card */
 File file;
-#define sdPort 10;
+#define sdPort 10
 
 void setup(void) {
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial)
     delay(10);
   
@@ -78,29 +79,39 @@ void loop() {
   dt = (millis() - previousTime) / 1000.;
   previousTime = millis();
   input = input + (gyro.gyro.x + gyroOffset) * dt;
-  
-  pid.Compute();
 
+  pid.Compute();
+  
   setMotor(output);
 
   // Log
-  file.print(dt + "\t");
+  file.print(dt);
+  file.print("\t");
   
-  Serial.print("Setpoint: " + setpoint + ",");
+  Serial.print("Setpoint: ");
+  Serial.print(setpoint);
+  Serial.print(",");
   file.print(setpoint);
   Serial.print("\t");
   file.print("\t");
   
-  Serial.print("Input: " + input + ",");
+  Serial.print("Current Gyro: ");
+  Serial.print(gyro.gyro.x);
+  Serial.print(",");
   Serial.print("\t");
-  file.print(input);
+  file.print(gyro.gyro.x);
   file.print("\t");
   
-  Serial.println("Output: " + output + ",");
+  Serial.print("Output: ");
+  Serial.print(output);
+  Serial.println(",");
   file.println(output);
  }
 
 void setMotor(int motorSpeed) {
+  if(abs(motorSpeed) < staticFriction) {
+    motorSpeed = 0;
+  }
   analogWrite(enA, abs(motorSpeed));
   analogWrite(enB, abs(motorSpeed));
   
