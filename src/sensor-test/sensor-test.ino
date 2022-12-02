@@ -8,20 +8,22 @@
 /* MPU */
 Adafruit_MPU6050 mpu;
 double offsetAmount = 0.04; // at stationary reads -0.04
-
+double input = 0;
+float dt;
+unsigned long previousTime;
 /* L298N Module */
 // Right Motor
-#define in1 6
+#define in1 8
 #define in2 7
-#define enA 5
+#define enA 9
 
 // Left Motor
-#define in3 8
-#define in4 9
-#define enB 10
+#define in3 6
+#define in4 5
+#define enB 3
 
 // Motor Constants
-int motorSpeed = 200;
+int motorSpeed = 255;
 int timeDelay = 500;
 
 /* HC-05 */
@@ -51,8 +53,9 @@ void setup(void) {
 
 void loop() {
   // motor_test();
-  bluetooth_test();
+  // bluetooth_test();
   // IMU_test();
+  // angle_test();
 }
 
 void IMU_setup() {
@@ -130,6 +133,15 @@ void IMU_setup() {
   delay(100);
 }
 
+void angle_test() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  dt = (millis() - previousTime) / 1000.;
+  previousTime = millis();
+  input = input + (g.gyro.x) * dt;
+  Serial.println(input);
+}
 // copied from example
 void IMU_test() {
   /* Get new sensor events with the readings */
@@ -146,7 +158,7 @@ void IMU_test() {
   Serial.println(" m/s^2");
 
   Serial.print("Rotation X: ");
-  Serial.print(g.gyro.x + offsetAmount);
+  Serial.print(g.gyro.x);
   Serial.print(", Y: ");
   Serial.print(g.gyro.y);
   Serial.print(", Z: ");
@@ -215,7 +227,7 @@ void bluetooth_test() {
 
 void sdcard_test() {
   Serial.println("Initializing SD card...");
-  SD.begin(10);
+  SD.begin(4);
   Serial.println("Initialization done!");
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.

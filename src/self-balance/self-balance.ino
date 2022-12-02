@@ -8,7 +8,9 @@
 /* IMU parameters */
 Adafruit_MPU6050 mpu;
 sensors_event_t accelerometer, gyro, temp;
-double gyroOffset = 0.04;
+double gyroOffset = 0.01;
+// .04 x 
+// .01 z
 
 uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
@@ -17,21 +19,21 @@ float dt;
 unsigned long previousTime;
 
 /* L298N Module */
-int staticFriction = 70; // TODO: Needs to be tested
+int staticFriction = 130; // TODO: Needs to be tested
 // Right Motor
-#define in1 6
+#define in1 8
 #define in2 7
-#define enA 5
+#define enA 9
 
 // Left Motor
-#define in3 8
-#define in4 9
+#define in3 6
+#define in4 5
 #define enB 3
 
 /* PID parameters */
-double Kp = 300.0;
+double Kp = 2150.0;
+double Kd = 20.0;
 double Ki = 0.0;
-double Kd = 0.0;
 
 double setpoint = 0.0;
 double input; // IMU
@@ -40,9 +42,10 @@ double output; // Motor
 PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 /* SD Card */
-File file;
-#define sdPort 10
+File general, imu_log, motor_log;
+#define sdPort 4
 
+double runTime = 0;
 void setup(void) {
   Serial.begin(9600);
   while (!Serial)
@@ -53,7 +56,7 @@ void setup(void) {
 
    // Setup SD card
    SD.begin(sdPort);
-   file = SD.open("logs.txt", FILE_WRITE);
+   // file = SD.open("logs.txt", FILE_WRITE);
    // check if have to close
    
    // Setup PID
@@ -78,39 +81,68 @@ void loop() {
   // curAngle = (1 - alpha) * (curAngle + angle_gyro) + alpha*angle_accel; // end of copy paste
   dt = (millis() - previousTime) / 1000.;
   previousTime = millis();
-  input = input + (gyro.gyro.x + gyroOffset) * dt;
+  input = input + (gyro.gyro.y + gyroOffset) * dt;
 
   pid.Compute();
   
   setMotor(output);
 
   // Log
-  file.print(dt);
-  file.print("\t");
+  general = SD.open("general.txt", FILE_WRITE);
   
+  general.print(dt);
+  general.print("\t");
+  // general.close();
+
   Serial.print("Setpoint: ");
-  Serial.print(setpoint);
+  Serial.println(input);
   Serial.print(",");
-  file.print(setpoint);
+  // file.print(setpoint);
   Serial.print("\t");
-  file.print("\t");
+  // file.print("\t");
+  runTime += dt;
+  if(abs(input) < 1.3) {
+    imu_log = SD.open("imu.txt", FILE_WRITE);
+    Serial.print("Current Gyro: ");
+    Serial.print(gyro.gyro.y);
+    Serial.print(",");
+    Serial.print("\t");
+    imu_log.print(runTime);
+    imu_log.print("\t");
+    imu_log.print(gyro.gyro.y);
+    imu_log.print("\t");
+    imu_log.print(accelerometer.acceleration.y);
+    imu_log.print("\t");
+    imu_log.print(accelerometer.acceleration.z);
+    imu_log.print("\t");
+    imu_log.println(input);
+    // imu_log.print("\t");
+    imu_log.close();
+  }
   
-  Serial.print("Current Gyro: ");
-  Serial.print(gyro.gyro.x);
-  Serial.print(",");
-  Serial.print("\t");
-  file.print(gyro.gyro.x);
-  file.print("\t");
   
+  general.print(gyro.gyro.y);
+  general.print("\t");
+  general.print(accelerometer.acceleration.y);
+  general.print("\t");
+  general.println(accelerometer.acceleration.z);
+  general.print("\t");
+
+
+  motor_log = SD.open("motor.txt", FILE_WRITE);
   Serial.print("Output: ");
   Serial.print(output);
   Serial.println(",");
-  file.println(output);
+  motor_log.println(output);
+  motor_log.close();
+  
+  general.println(output);
+  general.close();
  }
 
 void setMotor(int motorSpeed) {
   if(abs(motorSpeed) < staticFriction) {
-    motorSpeed = 0;
+    motorSpeed = abs(motorSpeed) / motorSpeed * staticFriction;
   }
   analogWrite(enA, abs(motorSpeed));
   analogWrite(enB, abs(motorSpeed));
