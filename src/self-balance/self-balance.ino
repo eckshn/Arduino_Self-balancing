@@ -42,7 +42,7 @@ double output; // Motor
 PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 /* SD Card */
-File general, imu_log, motor_log;
+File general, imu_log, motor_log, x_log;
 #define sdPort 4
 
 double runTime = 0;
@@ -88,10 +88,11 @@ void loop() {
   setMotor(output);
 
   // Log
-  general = SD.open("general.txt", FILE_WRITE);
+  general = SD.open("y_log.txt", FILE_WRITE);
+  x_log = SD.open("x_log.txt", FILE_WRITE);
   
-  general.print(dt);
-  general.print("\t");
+  // general.print(dt);
+  // general.print("\t");
   // general.close();
 
   Serial.print("Setpoint: ");
@@ -126,9 +127,13 @@ void loop() {
   general.print(accelerometer.acceleration.y);
   general.print("\t");
   general.println(accelerometer.acceleration.z);
-  general.print("\t");
 
-
+  x_log.print(gyro.gyro.y);
+  x_log.print("\t");
+  x_log.print(accelerometer.acceleration.x);
+  x_log.print("\t");
+  x_log.println(accelerometer.acceleration.z);
+  
   motor_log = SD.open("motor.txt", FILE_WRITE);
   Serial.print("Output: ");
   Serial.print(output);
@@ -136,8 +141,9 @@ void loop() {
   motor_log.println(output);
   motor_log.close();
   
-  general.println(output);
+  // general.println(output);
   general.close();
+  x_log.close();
  }
 
 void setMotor(int motorSpeed) {

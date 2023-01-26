@@ -15,7 +15,7 @@ uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
 
 float dt;
-unsigned long previousTime;
+double timeDelay = 75.0;
 
 /* L298N Module */
 int staticFriction = 130; // TODO: Needs to be tested
@@ -34,15 +34,16 @@ File general, imu_log, motor_log;
 #define sdPort 4
 
 /* Neural Network */
-const int InputNodes = 2; // 3 if acceleration.z
+const int InputNodes = 3; // 3 if acceleration.z
 const int HiddenNodes = 8;
 const int OutputNodes = 1;
 float Accum;
 float Hidden[HiddenNodes];
 float output;
-float HiddenWeights[InputNodes+1][HiddenNodes]; // TODO
-float OutputWeights[HiddenNodes+1]; // TODO
+float HiddenWeights[InputNodes+1][HiddenNodes] = { {5.09057, -4.00655, -8.87062, -0.871889, 1.70307, -1.60015, -1.23579, 1.4842}, {0.153815, -7.29709, -1.21556, -6.77342, 6.36775, -0.156223, 0.0280848, 0.13364}, {0.263409, -2.56881, -0.231012, -2.18577, -2.13998, -1.28245,  0.78955, 1.04223}, {-2.69084, 2.00648, -3.41166, -4, 0.039162, 7.89914, -6.455, -6.29689} }; // TODO
+float OutputWeights[HiddenNodes+1] = {-5.66203, 4.56084, -9.06113, -8.41671, 7.66029, 8.66586, 16.4839, -7.64896, -1.07353}; // TODO
 float Input[InputNodes];
+int pwm_output = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -60,13 +61,28 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   mpu.getEvent(&accelerometer, &gyro, &temp);
-
+  general = SD.open("rob.txt", FILE_WRITE);
+  general.print(gyro.gyro.y);
+  general.print("\t");
+  general.print(accelerometer.acceleration.x);
+  general.print("\t");
+  general.print(accelerometer.acceleration.z);
+  general.println("\t");
+  general.close();
   Input[0] = gyro.gyro.y;
-  Input[1] = accelerometer.acceleration.y;
-  
-  neural_network();
+  Input[1] = accelerometer.acceleration.x;
+  Input[2] = accelerometer.acceleration.z;
 
-  setMotor((int) output);
+  neural_network();
+  pwm_output = map((int) (output * 100), 0, 100, -255, 255);
+  setMotor(pwm_output);
+
+  // Log
+  general = SD.open("nn.txt", FILE_WRITE);
+  general.println(output);
+  general.close();
+
+  delay(timeDelay);
 }
 
 void neural_network() {
@@ -91,7 +107,7 @@ void setMotor(int motorSpeed) {
   analogWrite(enA, abs(motorSpeed));
   analogWrite(enB, abs(motorSpeed));
   
-  if(motorSpeed < 0) { // may need to flip
+  if(motorSpeed < 0) { 
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
   
