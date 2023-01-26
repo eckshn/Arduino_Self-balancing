@@ -71,14 +71,7 @@ void setup(void) {
 void loop() {
   mpu.getEvent(&accelerometer, &gyro, &temp); 
 
-  //copied from old code need to understand what constants mean
-  // double z_accel = accelerometer.acceleration.z + 2.08;
-  // double y_accel = accelerometer.acceleration.y + 0.37;
-  // double x_accel = accelerometer.acceleration.x - 0.81;
-
-  // double angle_accel = atan(z_accel / y_accel);
-  // double angle_gyro = gyro.gyro.pitch; // use pitch as bot rotates forward
-  // curAngle = (1 - alpha) * (curAngle + angle_gyro) + alpha*angle_accel; // end of copy paste
+  // Figures out the current angle of the robot by multiplying the change in time by the angular velocity.
   dt = (millis() - previousTime) / 1000.;
   previousTime = millis();
   input = input + (gyro.gyro.y + gyroOffset) * dt;
@@ -90,10 +83,6 @@ void loop() {
   // Log
   general = SD.open("y_log.txt", FILE_WRITE);
   x_log = SD.open("x_log.txt", FILE_WRITE);
-  
-  // general.print(dt);
-  // general.print("\t");
-  // general.close();
 
   Serial.print("Setpoint: ");
   Serial.println(input);
@@ -146,14 +135,19 @@ void loop() {
   x_log.close();
  }
 
+/*
+ * Sets the speed of the motor based on the PWM (0-256) value provided by motorSpeed.
+ */
 void setMotor(int motorSpeed) {
   if(abs(motorSpeed) < staticFriction) {
+    // The motor will still move at the lowest possible PWM value to overcome static friction if motorSpeed is less than the necessary PWM.
     motorSpeed = abs(motorSpeed) / motorSpeed * staticFriction;
   }
   analogWrite(enA, abs(motorSpeed));
   analogWrite(enB, abs(motorSpeed));
-  
-  if(motorSpeed < 0) { // may need to flip
+
+  // Switches the direction the motor spins based on the sign of motorSpeed.
+  if(motorSpeed < 0) {
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
   
