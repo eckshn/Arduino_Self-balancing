@@ -7,9 +7,10 @@
 /* IMU parameters */
 Adafruit_MPU6050 mpu;
 sensors_event_t accelerometer, gyro, temp;
+
 double gyroOffset = 0.01;
-// .04 x 
-// .01 z
+// .04 for x axis offset
+// .01 for z axis offset
 
 uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
@@ -18,7 +19,7 @@ float dt;
 double timeDelay = 75.0;
 
 /* L298N Module */
-int staticFriction = 130; // TODO: Needs to be tested
+int staticFriction = 130;
 // Right Motor
 #define in1 8
 #define in2 7
@@ -46,7 +47,6 @@ float Input[InputNodes];
 int pwm_output = 0;
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
   while (!Serial)
     delay(10);
@@ -59,8 +59,8 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   mpu.getEvent(&accelerometer, &gyro, &temp);
+
   general = SD.open("rob.txt", FILE_WRITE);
   general.print(gyro.gyro.y);
   general.print("\t");
@@ -69,11 +69,13 @@ void loop() {
   general.print(accelerometer.acceleration.z);
   general.println("\t");
   general.close();
+  
   Input[0] = gyro.gyro.y;
   Input[1] = accelerometer.acceleration.x;
   Input[2] = accelerometer.acceleration.z;
 
   neural_network();
+  // The output from the neural network has a range from 0 and 1 and needs to be translated to PWM output range
   pwm_output = map((int) (output * 100), 0, 100, -255, 255);
   setMotor(pwm_output);
 
@@ -85,6 +87,10 @@ void loop() {
   delay(timeDelay);
 }
 
+/*
+ * Runs the neural network by going through the Hiiden and Output Weights 
+ * and using the Input array that was updated before the method was called.
+ */
 void neural_network() {
   for(int i = 0 ; i < HiddenNodes ; i++ ) {    
       Accum = HiddenWeights[InputNodes][i] ;
@@ -100,13 +106,18 @@ void neural_network() {
   output = 1.0/(1.0 + exp(-Accum)) ; // *510 - 255
 }
 
+/*
+ * Sets the speed of the motor based on the PWM (0-256) value provided by motorSpeed.
+ */
 void setMotor(int motorSpeed) {
   if(abs(motorSpeed) < staticFriction) {
+    // The motor will still move at the lowest possible PWM value to overcome static friction if motorSpeed is less than the necessary PWM.
     motorSpeed = abs(motorSpeed) / motorSpeed * staticFriction;
   }
   analogWrite(enA, abs(motorSpeed));
   analogWrite(enB, abs(motorSpeed));
-  
+
+  // Switches the direction the motor spins based on the sign of motorSpeed.
   if(motorSpeed < 0) { 
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);

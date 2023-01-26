@@ -8,9 +8,10 @@
 /* IMU parameters */
 Adafruit_MPU6050 mpu;
 sensors_event_t accelerometer, gyro, temp;
+
 double gyroOffset = 0.01;
-// .04 x 
-// .01 z
+// .04 for x axis offset
+// .01 for z axis offset
 
 uint8_t maxPWM = 250;
 uint8_t minPWM = 80;
@@ -19,7 +20,7 @@ float dt;
 unsigned long previousTime;
 
 /* L298N Module */
-int staticFriction = 130; // TODO: Needs to be tested
+int staticFriction = 130;
 // Right Motor
 #define in1 8
 #define in2 7
